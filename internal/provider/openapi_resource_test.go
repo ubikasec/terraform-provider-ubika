@@ -40,12 +40,6 @@ func TestAccOpenAPIResource(t *testing.T) {
 
 func testAccOpenAPIResourceConfig(name string, namespace string) string {
 	return fmt.Sprintf(`
-provider "ubika" {
-	host            = "api.staging.yzg.ubika.io"
-	port            = "443"
-	insecure_no_tls = false
-	}
-
 resource "ubika_openapi" "test" {
   metadata = {
     name = %[1]q

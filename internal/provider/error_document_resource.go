@@ -3,12 +3,10 @@ package provider
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	assetsv1 "github.com/ubikasec/terraform-provider-ubika/internal/apis/assets.ubika.io/v1beta"
@@ -60,23 +58,7 @@ func (r *ErrorDocumentResource) Schema(ctx context.Context, req resource.SchemaR
 }
 
 func (r *ErrorDocumentResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	// Prevent panic if the provider has not been configured.
-	if req.ProviderData == nil {
-		return
-	}
-
-	client, ok := req.ProviderData.(assetsv1.Client)
-
-	if !ok {
-		resp.Diagnostics.AddError(
-			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected *assetsv1.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
-		)
-
-		return
-	}
-
-	r.client = client
+	r.client = getClient(req, resp)
 }
 
 func (r *ErrorDocumentResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -224,20 +206,7 @@ func (r *ErrorDocumentResource) Delete(ctx context.Context, req resource.DeleteR
 }
 
 func (r *ErrorDocumentResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	parts := strings.Split(req.ID, "/")
-	var name, namespace string
-	if len(parts) == 2 {
-		namespace = parts[0]
-		name = parts[1]
-	} else {
-		resp.Diagnostics.AddError("Inexpected input", "A namespace is required, ID must be in the form 'namespace/resource-name'")
-	}
-
-	meta := metav1.ObjectMetaResourceTFModel{
-		Name:      types.StringValue(name),
-		Namespace: types.StringValue(namespace),
-	}
-	state, diags := r.read(ctx, basetypes.ObjectValue{}, &meta)
+	state, diags := r.read(ctx, basetypes.ObjectValue{}, getMeta(req, resp))
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

@@ -2,8 +2,11 @@ package provider
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"time"
 
+	"github.com/cenkalti/backoff/v4"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -278,6 +281,38 @@ func (r *AssetResource) Create(ctx context.Context, req resource.CreateRequest, 
 	_, err = state.FromProto(asset)
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to get state from asset, got error: %s", err))
+		return
+	}
+
+	bo := backoff.NewExponentialBackOff()
+	bo.InitialInterval = 200 * time.Millisecond
+	bo.MaxInterval = 10 * time.Second
+	bo.MaxElapsedTime = 0
+
+	retryFunc := func() error {
+		asset, err := r.client.Asset().Get(ctx, &metav1.GetOptions{
+			Name:      asset.GetMetadata().GetName(),
+			Namespace: asset.GetMetadata().GetNamespace(),
+		})
+		if err != nil {
+			return err
+		}
+
+		_, err = state.FromProto(asset)
+		if err != nil {
+			return err
+		}
+
+		if asset.GetStatus().GetServiceAddress() == "" {
+			return errors.New("retry")
+		}
+		return nil
+	}
+
+	// Retry until context is cancelled
+	err = backoff.Retry(retryFunc, bo)
+	if err != nil {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to get status from asset, got error: %s", err))
 		return
 	}
 

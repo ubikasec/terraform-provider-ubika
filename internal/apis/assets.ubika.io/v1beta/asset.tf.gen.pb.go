@@ -3,6 +3,8 @@ package v1beta
 
 import (
 	context "context"
+	"encoding/json"
+
 	diag "github.com/hashicorp/terraform-plugin-framework/diag"
 	types "github.com/hashicorp/terraform-plugin-framework/types"
 	basetypes "github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -48,7 +50,7 @@ func (m *ExceptionProfileSpec_RuleResourceModel) FromProto(r *ExceptionProfileSp
 }
 
 type ExceptionProfileSpecResourceModel struct {
-	Rules *[]ExceptionProfileSpec_RuleResourceModel `tfsdk:"rules"`
+	Rules []*ExceptionProfileSpec_RuleResourceModel `tfsdk:"rules"`
 }
 
 // FromProto imports field values from protobuf message
@@ -57,6 +59,14 @@ func (m *ExceptionProfileSpecResourceModel) FromProto(r *ExceptionProfileSpec) (
 		m = new(ExceptionProfileSpecResourceModel)
 	}
 	if r.GetRules() != nil {
+		for _, eps := range r.GetRules() {
+			rtf := new(ExceptionProfileSpec_RuleResourceModel)
+			protoRtf, err := rtf.FromProto(eps)
+			if err != nil {
+				return nil, err
+			}
+			m.Rules = append(m.Rules, protoRtf) 
+		}
 		// TODO(generateTerraformFromProtoField): handle list of message for Rules
 	}
 	return m, nil
@@ -65,7 +75,7 @@ func (m *ExceptionProfileSpecResourceModel) FromProto(r *ExceptionProfileSpec) (
 // defined message ExceptionProfileSpec_Rule
 type ExceptionProfileSpec_RuleResourceTFModel struct {
 	Name    types.String `tfsdk:"name"`
-	Filters types.Set    `tfsdk:"filters"`
+	Filters types.List    `tfsdk:"filters"`
 }
 
 // ToProto converts the model to the corresponding protobuf struct
@@ -84,7 +94,7 @@ func (m *ExceptionProfileSpec_RuleResourceTFModel) ToProto(ctx context.Context) 
 }
 
 type ExceptionProfileSpecResourceTFModel struct {
-	Rules types.Set `tfsdk:"rules"`
+	Rules types.List `tfsdk:"rules"`
 }
 
 // ToProto converts the model to the corresponding protobuf struct
@@ -93,7 +103,11 @@ func (m *ExceptionProfileSpecResourceTFModel) ToProto(ctx context.Context) (*Exc
 		return nil, nil
 	}
 	r := &ExceptionProfileSpec{}
-	// TODO(generateTFSDKToProtoField): need to handle type for field Rules of Kind() message
+	for _, v := range m.Rules.Elements() {
+		tmp := &ExceptionProfileSpec_Rule{}
+		json.Unmarshal([]byte(v.String()), &tmp)
+		r.Rules = append(r.Rules, tmp)
+	}
 	return r, nil
 }
 

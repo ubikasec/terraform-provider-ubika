@@ -118,6 +118,7 @@ func (p *UbikaProvider) Resources(ctx context.Context) []func() resource.Resourc
 		NewAssetResource,
 		NewErrorDocumentResource,
 		NewOpenAPIResource,
+		NewExceptionProfileResource,
 	}
 }
 

@@ -115,6 +115,9 @@ func (r *AssetResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 					"ip_blacklist_module": schema.SingleNestedAttribute{
 						Optional: true,
 						Attributes: map[string]schema.Attribute{
+							"ip_blacklist": schema.StringAttribute{
+								Required: true,
+							},
 							"security_mode": schema.StringAttribute{
 								Optional: true,
 							},

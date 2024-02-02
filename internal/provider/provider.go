@@ -120,6 +120,7 @@ func (p *UbikaProvider) Resources(ctx context.Context) []func() resource.Resourc
 		NewIPBlacklistResource,
 		NewOpenAPIResource,
 		NewExceptionProfileResource,
+		NewTLSConfigurationResource,
 	}
 }
 

@@ -3,6 +3,7 @@ module github.com/ubikasec/terraform-provider-ubika
 go 1.19
 
 require (
+	github.com/cenkalti/backoff/v4 v4.2.1
 	github.com/envoyproxy/protoc-gen-validate v1.0.2
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/hashicorp/terraform-plugin-docs v0.16.0

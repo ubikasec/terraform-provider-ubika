@@ -9,8 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	assetsv1 "github.com/ubikasec/terraform-provider-ubika/internal/apis/assets.ubika.io/v1beta"
-	metav1 "github.com/ubikasec/terraform-provider-ubika/internal/apis/meta/v1beta"
+	assetsv1 "github.com/ubikasec/terraform-provider-ubika/internal/client/assets.ubika.io/v1beta"
+	metav1 "github.com/ubikasec/terraform-provider-ubika/internal/client/meta/v1beta"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -83,8 +83,7 @@ func (r *openAPIResource) Create(ctx context.Context, req resource.CreateRequest
 
 	// generate state from protobuf resource
 	var state assetsv1.OpenAPIResourceModel
-	_, err = state.FromProto(openAPI)
-	if err != nil {
+	if err := state.FromProto(openAPI); err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to get state from openAPI, got error: %s", err))
 		return
 	}
@@ -135,8 +134,7 @@ func (r *openAPIResource) read(ctx context.Context, metaObjValue basetypes.Objec
 
 	// update state from protobuf resource
 	var state assetsv1.OpenAPIResourceModel
-	_, err = state.FromProto(openAPI)
-	if err != nil {
+	if err := state.FromProto(openAPI); err != nil {
 		return assetsv1.OpenAPIResourceModel{}, []diag.Diagnostic{diag.NewErrorDiagnostic("Client Error", fmt.Sprintf("Unable to get state from openAPI %s/%s, got error: %s", meta.Name.ValueString(), meta.Namespace.ValueString(), err))}
 	}
 	return state, nil
@@ -165,8 +163,7 @@ func (r *openAPIResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	// generate state from protobuf resource
 	var state assetsv1.OpenAPIResourceModel
-	_, err = state.FromProto(openAPI)
-	if err != nil {
+	if err := state.FromProto(openAPI); err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to get state from openAPI, got error: %s", err))
 		return
 	}

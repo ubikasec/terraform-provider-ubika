@@ -161,6 +161,8 @@ func (m *Authz) validate(all bool) error {
 
 	// no validation rules for NamespacePermission
 
+	// no validation rules for OrganisationPermission
+
 	if len(errors) > 0 {
 		return AuthzMultiError(errors)
 	}

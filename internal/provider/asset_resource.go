@@ -16,8 +16,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	assetsv1 "github.com/ubikasec/terraform-provider-ubika/internal/apis/assets.ubika.io/v1beta"
-	metav1 "github.com/ubikasec/terraform-provider-ubika/internal/apis/meta/v1beta"
+	assetsv1 "github.com/ubikasec/terraform-provider-ubika/internal/client/assets.ubika.io/v1beta"
+	metav1 "github.com/ubikasec/terraform-provider-ubika/internal/client/meta/v1beta"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -222,7 +222,7 @@ func (r *AssetResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 							"dns": schema.StringAttribute{
 								Computed: true,
 							},
-							"runningstate": schema.StringAttribute{
+							"running_state": schema.StringAttribute{
 								Computed: true,
 							},
 						},
@@ -281,8 +281,7 @@ func (r *AssetResource) Create(ctx context.Context, req resource.CreateRequest, 
 
 	// generate state from protobuf resource
 	var state assetsv1.AssetResourceModel
-	_, err = state.FromProto(asset)
-	if err != nil {
+	if err := state.FromProto(asset); err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to get state from asset, got error: %s", err))
 		return
 	}
@@ -301,8 +300,7 @@ func (r *AssetResource) Create(ctx context.Context, req resource.CreateRequest, 
 			return err
 		}
 
-		_, err = state.FromProto(asset)
-		if err != nil {
+		if err := state.FromProto(asset); err != nil {
 			return err
 		}
 
@@ -365,8 +363,7 @@ func (r *AssetResource) read(ctx context.Context, metaObjValue basetypes.ObjectV
 
 	// update state from protobuf resource
 	var state assetsv1.AssetResourceModel
-	_, err = state.FromProto(asset)
-	if err != nil {
+	if err := state.FromProto(asset); err != nil {
 		return assetsv1.AssetResourceModel{}, []diag.Diagnostic{diag.NewErrorDiagnostic("Client Error", fmt.Sprintf("Unable to get state from asset %s/%s, got error: %s", meta.Name.ValueString(), meta.Namespace.ValueString(), err))}
 	}
 
@@ -396,8 +393,7 @@ func (r *AssetResource) Update(ctx context.Context, req resource.UpdateRequest, 
 
 	// generate state from protobuf resource
 	var state assetsv1.AssetResourceModel
-	_, err = state.FromProto(asset)
-	if err != nil {
+	if err := state.FromProto(asset); err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to get state from asset, got error: %s", err))
 		return
 	}

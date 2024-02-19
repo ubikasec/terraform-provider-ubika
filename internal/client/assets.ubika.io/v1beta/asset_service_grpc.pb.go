@@ -8,7 +8,7 @@ package v1beta
 
 import (
 	context "context"
-	v1beta "github.com/ubikasec/terraform-provider-ubika/internal/apis/meta/v1beta"
+	v1beta "github.com/ubikasec/terraform-provider-ubika/internal/client/meta/v1beta"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -26,6 +26,7 @@ const (
 	AssetSvc_Get_FullMethodName          = "/assets.ubika.io.v1beta.AssetSvc/Get"
 	AssetSvc_Update_FullMethodName       = "/assets.ubika.io.v1beta.AssetSvc/Update"
 	AssetSvc_Delete_FullMethodName       = "/assets.ubika.io.v1beta.AssetSvc/Delete"
+	AssetSvc_DeleteAll_FullMethodName    = "/assets.ubika.io.v1beta.AssetSvc/DeleteAll"
 	AssetSvc_Watch_FullMethodName        = "/assets.ubika.io.v1beta.AssetSvc/Watch"
 	AssetSvc_UpdateStatus_FullMethodName = "/assets.ubika.io.v1beta.AssetSvc/UpdateStatus"
 )
@@ -39,6 +40,7 @@ type AssetSvcClient interface {
 	Get(ctx context.Context, in *v1beta.GetOptions, opts ...grpc.CallOption) (*Asset, error)
 	Update(ctx context.Context, in *Asset, opts ...grpc.CallOption) (*Asset, error)
 	Delete(ctx context.Context, in *v1beta.DeleteOptions, opts ...grpc.CallOption) (*Asset, error)
+	DeleteAll(ctx context.Context, in *v1beta.ListOptions, opts ...grpc.CallOption) (*AssetList, error)
 	Watch(ctx context.Context, in *v1beta.WatchOptions, opts ...grpc.CallOption) (AssetSvc_WatchClient, error)
 	UpdateStatus(ctx context.Context, in *Asset, opts ...grpc.CallOption) (*Asset, error)
 }
@@ -96,6 +98,15 @@ func (c *assetSvcClient) Delete(ctx context.Context, in *v1beta.DeleteOptions, o
 	return out, nil
 }
 
+func (c *assetSvcClient) DeleteAll(ctx context.Context, in *v1beta.ListOptions, opts ...grpc.CallOption) (*AssetList, error) {
+	out := new(AssetList)
+	err := c.cc.Invoke(ctx, AssetSvc_DeleteAll_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *assetSvcClient) Watch(ctx context.Context, in *v1beta.WatchOptions, opts ...grpc.CallOption) (AssetSvc_WatchClient, error) {
 	stream, err := c.cc.NewStream(ctx, &AssetSvc_ServiceDesc.Streams[0], AssetSvc_Watch_FullMethodName, opts...)
 	if err != nil {
@@ -146,6 +157,7 @@ type AssetSvcServer interface {
 	Get(context.Context, *v1beta.GetOptions) (*Asset, error)
 	Update(context.Context, *Asset) (*Asset, error)
 	Delete(context.Context, *v1beta.DeleteOptions) (*Asset, error)
+	DeleteAll(context.Context, *v1beta.ListOptions) (*AssetList, error)
 	Watch(*v1beta.WatchOptions, AssetSvc_WatchServer) error
 	UpdateStatus(context.Context, *Asset) (*Asset, error)
 	mustEmbedUnimplementedAssetSvcServer()
@@ -169,6 +181,9 @@ func (UnimplementedAssetSvcServer) Update(context.Context, *Asset) (*Asset, erro
 }
 func (UnimplementedAssetSvcServer) Delete(context.Context, *v1beta.DeleteOptions) (*Asset, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
+}
+func (UnimplementedAssetSvcServer) DeleteAll(context.Context, *v1beta.ListOptions) (*AssetList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteAll not implemented")
 }
 func (UnimplementedAssetSvcServer) Watch(*v1beta.WatchOptions, AssetSvc_WatchServer) error {
 	return status.Errorf(codes.Unimplemented, "method Watch not implemented")
@@ -279,6 +294,24 @@ func _AssetSvc_Delete_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AssetSvc_DeleteAll_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1beta.ListOptions)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AssetSvcServer).DeleteAll(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AssetSvc_DeleteAll_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AssetSvcServer).DeleteAll(ctx, req.(*v1beta.ListOptions))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AssetSvc_Watch_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(v1beta.WatchOptions)
 	if err := stream.RecvMsg(m); err != nil {
@@ -346,6 +379,10 @@ var AssetSvc_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AssetSvc_Delete_Handler,
 		},
 		{
+			MethodName: "DeleteAll",
+			Handler:    _AssetSvc_DeleteAll_Handler,
+		},
+		{
 			MethodName: "UpdateStatus",
 			Handler:    _AssetSvc_UpdateStatus_Handler,
 		},
@@ -361,12 +398,13 @@ var AssetSvc_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
-	WorkflowSvc_List_FullMethodName   = "/assets.ubika.io.v1beta.WorkflowSvc/List"
-	WorkflowSvc_Create_FullMethodName = "/assets.ubika.io.v1beta.WorkflowSvc/Create"
-	WorkflowSvc_Get_FullMethodName    = "/assets.ubika.io.v1beta.WorkflowSvc/Get"
-	WorkflowSvc_Update_FullMethodName = "/assets.ubika.io.v1beta.WorkflowSvc/Update"
-	WorkflowSvc_Delete_FullMethodName = "/assets.ubika.io.v1beta.WorkflowSvc/Delete"
-	WorkflowSvc_Watch_FullMethodName  = "/assets.ubika.io.v1beta.WorkflowSvc/Watch"
+	WorkflowSvc_List_FullMethodName      = "/assets.ubika.io.v1beta.WorkflowSvc/List"
+	WorkflowSvc_Create_FullMethodName    = "/assets.ubika.io.v1beta.WorkflowSvc/Create"
+	WorkflowSvc_Get_FullMethodName       = "/assets.ubika.io.v1beta.WorkflowSvc/Get"
+	WorkflowSvc_Update_FullMethodName    = "/assets.ubika.io.v1beta.WorkflowSvc/Update"
+	WorkflowSvc_Delete_FullMethodName    = "/assets.ubika.io.v1beta.WorkflowSvc/Delete"
+	WorkflowSvc_DeleteAll_FullMethodName = "/assets.ubika.io.v1beta.WorkflowSvc/DeleteAll"
+	WorkflowSvc_Watch_FullMethodName     = "/assets.ubika.io.v1beta.WorkflowSvc/Watch"
 )
 
 // WorkflowSvcClient is the client API for WorkflowSvc service.
@@ -378,6 +416,7 @@ type WorkflowSvcClient interface {
 	Get(ctx context.Context, in *v1beta.GetOptions, opts ...grpc.CallOption) (*Workflow, error)
 	Update(ctx context.Context, in *Workflow, opts ...grpc.CallOption) (*Workflow, error)
 	Delete(ctx context.Context, in *v1beta.DeleteOptions, opts ...grpc.CallOption) (*Workflow, error)
+	DeleteAll(ctx context.Context, in *v1beta.ListOptions, opts ...grpc.CallOption) (*WorkflowList, error)
 	Watch(ctx context.Context, in *v1beta.WatchOptions, opts ...grpc.CallOption) (WorkflowSvc_WatchClient, error)
 }
 
@@ -434,6 +473,15 @@ func (c *workflowSvcClient) Delete(ctx context.Context, in *v1beta.DeleteOptions
 	return out, nil
 }
 
+func (c *workflowSvcClient) DeleteAll(ctx context.Context, in *v1beta.ListOptions, opts ...grpc.CallOption) (*WorkflowList, error) {
+	out := new(WorkflowList)
+	err := c.cc.Invoke(ctx, WorkflowSvc_DeleteAll_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *workflowSvcClient) Watch(ctx context.Context, in *v1beta.WatchOptions, opts ...grpc.CallOption) (WorkflowSvc_WatchClient, error) {
 	stream, err := c.cc.NewStream(ctx, &WorkflowSvc_ServiceDesc.Streams[0], WorkflowSvc_Watch_FullMethodName, opts...)
 	if err != nil {
@@ -475,6 +523,7 @@ type WorkflowSvcServer interface {
 	Get(context.Context, *v1beta.GetOptions) (*Workflow, error)
 	Update(context.Context, *Workflow) (*Workflow, error)
 	Delete(context.Context, *v1beta.DeleteOptions) (*Workflow, error)
+	DeleteAll(context.Context, *v1beta.ListOptions) (*WorkflowList, error)
 	Watch(*v1beta.WatchOptions, WorkflowSvc_WatchServer) error
 	mustEmbedUnimplementedWorkflowSvcServer()
 }
@@ -497,6 +546,9 @@ func (UnimplementedWorkflowSvcServer) Update(context.Context, *Workflow) (*Workf
 }
 func (UnimplementedWorkflowSvcServer) Delete(context.Context, *v1beta.DeleteOptions) (*Workflow, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
+}
+func (UnimplementedWorkflowSvcServer) DeleteAll(context.Context, *v1beta.ListOptions) (*WorkflowList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteAll not implemented")
 }
 func (UnimplementedWorkflowSvcServer) Watch(*v1beta.WatchOptions, WorkflowSvc_WatchServer) error {
 	return status.Errorf(codes.Unimplemented, "method Watch not implemented")
@@ -604,6 +656,24 @@ func _WorkflowSvc_Delete_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _WorkflowSvc_DeleteAll_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1beta.ListOptions)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WorkflowSvcServer).DeleteAll(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: WorkflowSvc_DeleteAll_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WorkflowSvcServer).DeleteAll(ctx, req.(*v1beta.ListOptions))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _WorkflowSvc_Watch_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(v1beta.WatchOptions)
 	if err := stream.RecvMsg(m); err != nil {
@@ -652,6 +722,10 @@ var WorkflowSvc_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "Delete",
 			Handler:    _WorkflowSvc_Delete_Handler,
 		},
+		{
+			MethodName: "DeleteAll",
+			Handler:    _WorkflowSvc_DeleteAll_Handler,
+		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
@@ -664,12 +738,13 @@ var WorkflowSvc_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
-	OpenAPISvc_List_FullMethodName   = "/assets.ubika.io.v1beta.OpenAPISvc/List"
-	OpenAPISvc_Create_FullMethodName = "/assets.ubika.io.v1beta.OpenAPISvc/Create"
-	OpenAPISvc_Get_FullMethodName    = "/assets.ubika.io.v1beta.OpenAPISvc/Get"
-	OpenAPISvc_Update_FullMethodName = "/assets.ubika.io.v1beta.OpenAPISvc/Update"
-	OpenAPISvc_Delete_FullMethodName = "/assets.ubika.io.v1beta.OpenAPISvc/Delete"
-	OpenAPISvc_Watch_FullMethodName  = "/assets.ubika.io.v1beta.OpenAPISvc/Watch"
+	OpenAPISvc_List_FullMethodName      = "/assets.ubika.io.v1beta.OpenAPISvc/List"
+	OpenAPISvc_Create_FullMethodName    = "/assets.ubika.io.v1beta.OpenAPISvc/Create"
+	OpenAPISvc_Get_FullMethodName       = "/assets.ubika.io.v1beta.OpenAPISvc/Get"
+	OpenAPISvc_Update_FullMethodName    = "/assets.ubika.io.v1beta.OpenAPISvc/Update"
+	OpenAPISvc_Delete_FullMethodName    = "/assets.ubika.io.v1beta.OpenAPISvc/Delete"
+	OpenAPISvc_DeleteAll_FullMethodName = "/assets.ubika.io.v1beta.OpenAPISvc/DeleteAll"
+	OpenAPISvc_Watch_FullMethodName     = "/assets.ubika.io.v1beta.OpenAPISvc/Watch"
 )
 
 // OpenAPISvcClient is the client API for OpenAPISvc service.
@@ -681,6 +756,7 @@ type OpenAPISvcClient interface {
 	Get(ctx context.Context, in *v1beta.GetOptions, opts ...grpc.CallOption) (*OpenAPI, error)
 	Update(ctx context.Context, in *OpenAPI, opts ...grpc.CallOption) (*OpenAPI, error)
 	Delete(ctx context.Context, in *v1beta.DeleteOptions, opts ...grpc.CallOption) (*OpenAPI, error)
+	DeleteAll(ctx context.Context, in *v1beta.ListOptions, opts ...grpc.CallOption) (*OpenAPIList, error)
 	Watch(ctx context.Context, in *v1beta.WatchOptions, opts ...grpc.CallOption) (OpenAPISvc_WatchClient, error)
 }
 
@@ -737,6 +813,15 @@ func (c *openAPISvcClient) Delete(ctx context.Context, in *v1beta.DeleteOptions,
 	return out, nil
 }
 
+func (c *openAPISvcClient) DeleteAll(ctx context.Context, in *v1beta.ListOptions, opts ...grpc.CallOption) (*OpenAPIList, error) {
+	out := new(OpenAPIList)
+	err := c.cc.Invoke(ctx, OpenAPISvc_DeleteAll_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *openAPISvcClient) Watch(ctx context.Context, in *v1beta.WatchOptions, opts ...grpc.CallOption) (OpenAPISvc_WatchClient, error) {
 	stream, err := c.cc.NewStream(ctx, &OpenAPISvc_ServiceDesc.Streams[0], OpenAPISvc_Watch_FullMethodName, opts...)
 	if err != nil {
@@ -778,6 +863,7 @@ type OpenAPISvcServer interface {
 	Get(context.Context, *v1beta.GetOptions) (*OpenAPI, error)
 	Update(context.Context, *OpenAPI) (*OpenAPI, error)
 	Delete(context.Context, *v1beta.DeleteOptions) (*OpenAPI, error)
+	DeleteAll(context.Context, *v1beta.ListOptions) (*OpenAPIList, error)
 	Watch(*v1beta.WatchOptions, OpenAPISvc_WatchServer) error
 	mustEmbedUnimplementedOpenAPISvcServer()
 }
@@ -800,6 +886,9 @@ func (UnimplementedOpenAPISvcServer) Update(context.Context, *OpenAPI) (*OpenAPI
 }
 func (UnimplementedOpenAPISvcServer) Delete(context.Context, *v1beta.DeleteOptions) (*OpenAPI, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
+}
+func (UnimplementedOpenAPISvcServer) DeleteAll(context.Context, *v1beta.ListOptions) (*OpenAPIList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteAll not implemented")
 }
 func (UnimplementedOpenAPISvcServer) Watch(*v1beta.WatchOptions, OpenAPISvc_WatchServer) error {
 	return status.Errorf(codes.Unimplemented, "method Watch not implemented")
@@ -907,6 +996,24 @@ func _OpenAPISvc_Delete_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _OpenAPISvc_DeleteAll_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1beta.ListOptions)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OpenAPISvcServer).DeleteAll(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: OpenAPISvc_DeleteAll_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OpenAPISvcServer).DeleteAll(ctx, req.(*v1beta.ListOptions))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _OpenAPISvc_Watch_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(v1beta.WatchOptions)
 	if err := stream.RecvMsg(m); err != nil {
@@ -955,6 +1062,10 @@ var OpenAPISvc_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "Delete",
 			Handler:    _OpenAPISvc_Delete_Handler,
 		},
+		{
+			MethodName: "DeleteAll",
+			Handler:    _OpenAPISvc_DeleteAll_Handler,
+		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
@@ -967,12 +1078,13 @@ var OpenAPISvc_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
-	ExceptionProfileSvc_List_FullMethodName   = "/assets.ubika.io.v1beta.ExceptionProfileSvc/List"
-	ExceptionProfileSvc_Create_FullMethodName = "/assets.ubika.io.v1beta.ExceptionProfileSvc/Create"
-	ExceptionProfileSvc_Get_FullMethodName    = "/assets.ubika.io.v1beta.ExceptionProfileSvc/Get"
-	ExceptionProfileSvc_Update_FullMethodName = "/assets.ubika.io.v1beta.ExceptionProfileSvc/Update"
-	ExceptionProfileSvc_Delete_FullMethodName = "/assets.ubika.io.v1beta.ExceptionProfileSvc/Delete"
-	ExceptionProfileSvc_Watch_FullMethodName  = "/assets.ubika.io.v1beta.ExceptionProfileSvc/Watch"
+	ExceptionProfileSvc_List_FullMethodName      = "/assets.ubika.io.v1beta.ExceptionProfileSvc/List"
+	ExceptionProfileSvc_Create_FullMethodName    = "/assets.ubika.io.v1beta.ExceptionProfileSvc/Create"
+	ExceptionProfileSvc_Get_FullMethodName       = "/assets.ubika.io.v1beta.ExceptionProfileSvc/Get"
+	ExceptionProfileSvc_Update_FullMethodName    = "/assets.ubika.io.v1beta.ExceptionProfileSvc/Update"
+	ExceptionProfileSvc_Delete_FullMethodName    = "/assets.ubika.io.v1beta.ExceptionProfileSvc/Delete"
+	ExceptionProfileSvc_DeleteAll_FullMethodName = "/assets.ubika.io.v1beta.ExceptionProfileSvc/DeleteAll"
+	ExceptionProfileSvc_Watch_FullMethodName     = "/assets.ubika.io.v1beta.ExceptionProfileSvc/Watch"
 )
 
 // ExceptionProfileSvcClient is the client API for ExceptionProfileSvc service.
@@ -984,6 +1096,7 @@ type ExceptionProfileSvcClient interface {
 	Get(ctx context.Context, in *v1beta.GetOptions, opts ...grpc.CallOption) (*ExceptionProfile, error)
 	Update(ctx context.Context, in *ExceptionProfile, opts ...grpc.CallOption) (*ExceptionProfile, error)
 	Delete(ctx context.Context, in *v1beta.DeleteOptions, opts ...grpc.CallOption) (*ExceptionProfile, error)
+	DeleteAll(ctx context.Context, in *v1beta.ListOptions, opts ...grpc.CallOption) (*ExceptionProfileList, error)
 	Watch(ctx context.Context, in *v1beta.WatchOptions, opts ...grpc.CallOption) (ExceptionProfileSvc_WatchClient, error)
 }
 
@@ -1040,6 +1153,15 @@ func (c *exceptionProfileSvcClient) Delete(ctx context.Context, in *v1beta.Delet
 	return out, nil
 }
 
+func (c *exceptionProfileSvcClient) DeleteAll(ctx context.Context, in *v1beta.ListOptions, opts ...grpc.CallOption) (*ExceptionProfileList, error) {
+	out := new(ExceptionProfileList)
+	err := c.cc.Invoke(ctx, ExceptionProfileSvc_DeleteAll_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *exceptionProfileSvcClient) Watch(ctx context.Context, in *v1beta.WatchOptions, opts ...grpc.CallOption) (ExceptionProfileSvc_WatchClient, error) {
 	stream, err := c.cc.NewStream(ctx, &ExceptionProfileSvc_ServiceDesc.Streams[0], ExceptionProfileSvc_Watch_FullMethodName, opts...)
 	if err != nil {
@@ -1081,6 +1203,7 @@ type ExceptionProfileSvcServer interface {
 	Get(context.Context, *v1beta.GetOptions) (*ExceptionProfile, error)
 	Update(context.Context, *ExceptionProfile) (*ExceptionProfile, error)
 	Delete(context.Context, *v1beta.DeleteOptions) (*ExceptionProfile, error)
+	DeleteAll(context.Context, *v1beta.ListOptions) (*ExceptionProfileList, error)
 	Watch(*v1beta.WatchOptions, ExceptionProfileSvc_WatchServer) error
 	mustEmbedUnimplementedExceptionProfileSvcServer()
 }
@@ -1103,6 +1226,9 @@ func (UnimplementedExceptionProfileSvcServer) Update(context.Context, *Exception
 }
 func (UnimplementedExceptionProfileSvcServer) Delete(context.Context, *v1beta.DeleteOptions) (*ExceptionProfile, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
+}
+func (UnimplementedExceptionProfileSvcServer) DeleteAll(context.Context, *v1beta.ListOptions) (*ExceptionProfileList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteAll not implemented")
 }
 func (UnimplementedExceptionProfileSvcServer) Watch(*v1beta.WatchOptions, ExceptionProfileSvc_WatchServer) error {
 	return status.Errorf(codes.Unimplemented, "method Watch not implemented")
@@ -1210,6 +1336,24 @@ func _ExceptionProfileSvc_Delete_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ExceptionProfileSvc_DeleteAll_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1beta.ListOptions)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExceptionProfileSvcServer).DeleteAll(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ExceptionProfileSvc_DeleteAll_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExceptionProfileSvcServer).DeleteAll(ctx, req.(*v1beta.ListOptions))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ExceptionProfileSvc_Watch_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(v1beta.WatchOptions)
 	if err := stream.RecvMsg(m); err != nil {
@@ -1258,6 +1402,10 @@ var ExceptionProfileSvc_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "Delete",
 			Handler:    _ExceptionProfileSvc_Delete_Handler,
 		},
+		{
+			MethodName: "DeleteAll",
+			Handler:    _ExceptionProfileSvc_DeleteAll_Handler,
+		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
@@ -1270,12 +1418,13 @@ var ExceptionProfileSvc_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
-	ErrorDocumentSvc_List_FullMethodName   = "/assets.ubika.io.v1beta.ErrorDocumentSvc/List"
-	ErrorDocumentSvc_Create_FullMethodName = "/assets.ubika.io.v1beta.ErrorDocumentSvc/Create"
-	ErrorDocumentSvc_Get_FullMethodName    = "/assets.ubika.io.v1beta.ErrorDocumentSvc/Get"
-	ErrorDocumentSvc_Update_FullMethodName = "/assets.ubika.io.v1beta.ErrorDocumentSvc/Update"
-	ErrorDocumentSvc_Delete_FullMethodName = "/assets.ubika.io.v1beta.ErrorDocumentSvc/Delete"
-	ErrorDocumentSvc_Watch_FullMethodName  = "/assets.ubika.io.v1beta.ErrorDocumentSvc/Watch"
+	ErrorDocumentSvc_List_FullMethodName      = "/assets.ubika.io.v1beta.ErrorDocumentSvc/List"
+	ErrorDocumentSvc_Create_FullMethodName    = "/assets.ubika.io.v1beta.ErrorDocumentSvc/Create"
+	ErrorDocumentSvc_Get_FullMethodName       = "/assets.ubika.io.v1beta.ErrorDocumentSvc/Get"
+	ErrorDocumentSvc_Update_FullMethodName    = "/assets.ubika.io.v1beta.ErrorDocumentSvc/Update"
+	ErrorDocumentSvc_Delete_FullMethodName    = "/assets.ubika.io.v1beta.ErrorDocumentSvc/Delete"
+	ErrorDocumentSvc_DeleteAll_FullMethodName = "/assets.ubika.io.v1beta.ErrorDocumentSvc/DeleteAll"
+	ErrorDocumentSvc_Watch_FullMethodName     = "/assets.ubika.io.v1beta.ErrorDocumentSvc/Watch"
 )
 
 // ErrorDocumentSvcClient is the client API for ErrorDocumentSvc service.
@@ -1287,6 +1436,7 @@ type ErrorDocumentSvcClient interface {
 	Get(ctx context.Context, in *v1beta.GetOptions, opts ...grpc.CallOption) (*ErrorDocument, error)
 	Update(ctx context.Context, in *ErrorDocument, opts ...grpc.CallOption) (*ErrorDocument, error)
 	Delete(ctx context.Context, in *v1beta.DeleteOptions, opts ...grpc.CallOption) (*ErrorDocument, error)
+	DeleteAll(ctx context.Context, in *v1beta.ListOptions, opts ...grpc.CallOption) (*ErrorDocumentList, error)
 	Watch(ctx context.Context, in *v1beta.WatchOptions, opts ...grpc.CallOption) (ErrorDocumentSvc_WatchClient, error)
 }
 
@@ -1343,6 +1493,15 @@ func (c *errorDocumentSvcClient) Delete(ctx context.Context, in *v1beta.DeleteOp
 	return out, nil
 }
 
+func (c *errorDocumentSvcClient) DeleteAll(ctx context.Context, in *v1beta.ListOptions, opts ...grpc.CallOption) (*ErrorDocumentList, error) {
+	out := new(ErrorDocumentList)
+	err := c.cc.Invoke(ctx, ErrorDocumentSvc_DeleteAll_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *errorDocumentSvcClient) Watch(ctx context.Context, in *v1beta.WatchOptions, opts ...grpc.CallOption) (ErrorDocumentSvc_WatchClient, error) {
 	stream, err := c.cc.NewStream(ctx, &ErrorDocumentSvc_ServiceDesc.Streams[0], ErrorDocumentSvc_Watch_FullMethodName, opts...)
 	if err != nil {
@@ -1384,6 +1543,7 @@ type ErrorDocumentSvcServer interface {
 	Get(context.Context, *v1beta.GetOptions) (*ErrorDocument, error)
 	Update(context.Context, *ErrorDocument) (*ErrorDocument, error)
 	Delete(context.Context, *v1beta.DeleteOptions) (*ErrorDocument, error)
+	DeleteAll(context.Context, *v1beta.ListOptions) (*ErrorDocumentList, error)
 	Watch(*v1beta.WatchOptions, ErrorDocumentSvc_WatchServer) error
 	mustEmbedUnimplementedErrorDocumentSvcServer()
 }
@@ -1406,6 +1566,9 @@ func (UnimplementedErrorDocumentSvcServer) Update(context.Context, *ErrorDocumen
 }
 func (UnimplementedErrorDocumentSvcServer) Delete(context.Context, *v1beta.DeleteOptions) (*ErrorDocument, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
+}
+func (UnimplementedErrorDocumentSvcServer) DeleteAll(context.Context, *v1beta.ListOptions) (*ErrorDocumentList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteAll not implemented")
 }
 func (UnimplementedErrorDocumentSvcServer) Watch(*v1beta.WatchOptions, ErrorDocumentSvc_WatchServer) error {
 	return status.Errorf(codes.Unimplemented, "method Watch not implemented")
@@ -1513,6 +1676,24 @@ func _ErrorDocumentSvc_Delete_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ErrorDocumentSvc_DeleteAll_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1beta.ListOptions)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ErrorDocumentSvcServer).DeleteAll(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ErrorDocumentSvc_DeleteAll_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ErrorDocumentSvcServer).DeleteAll(ctx, req.(*v1beta.ListOptions))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ErrorDocumentSvc_Watch_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(v1beta.WatchOptions)
 	if err := stream.RecvMsg(m); err != nil {
@@ -1561,6 +1742,10 @@ var ErrorDocumentSvc_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "Delete",
 			Handler:    _ErrorDocumentSvc_Delete_Handler,
 		},
+		{
+			MethodName: "DeleteAll",
+			Handler:    _ErrorDocumentSvc_DeleteAll_Handler,
+		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
@@ -1578,15 +1763,18 @@ const (
 	TLSConfigurationSvc_Get_FullMethodName                  = "/assets.ubika.io.v1beta.TLSConfigurationSvc/Get"
 	TLSConfigurationSvc_Update_FullMethodName               = "/assets.ubika.io.v1beta.TLSConfigurationSvc/Update"
 	TLSConfigurationSvc_Delete_FullMethodName               = "/assets.ubika.io.v1beta.TLSConfigurationSvc/Delete"
+	TLSConfigurationSvc_DeleteAll_FullMethodName            = "/assets.ubika.io.v1beta.TLSConfigurationSvc/DeleteAll"
 	TLSConfigurationSvc_Watch_FullMethodName                = "/assets.ubika.io.v1beta.TLSConfigurationSvc/Watch"
 	TLSConfigurationSvc_ListCSR_FullMethodName              = "/assets.ubika.io.v1beta.TLSConfigurationSvc/ListCSR"
 	TLSConfigurationSvc_CreateCSR_FullMethodName            = "/assets.ubika.io.v1beta.TLSConfigurationSvc/CreateCSR"
 	TLSConfigurationSvc_GetCSR_FullMethodName               = "/assets.ubika.io.v1beta.TLSConfigurationSvc/GetCSR"
 	TLSConfigurationSvc_DeleteCSR_FullMethodName            = "/assets.ubika.io.v1beta.TLSConfigurationSvc/DeleteCSR"
+	TLSConfigurationSvc_DeleteAllCSR_FullMethodName         = "/assets.ubika.io.v1beta.TLSConfigurationSvc/DeleteAllCSR"
 	TLSConfigurationSvc_UpdateCSRCertificate_FullMethodName = "/assets.ubika.io.v1beta.TLSConfigurationSvc/UpdateCSRCertificate"
 	TLSConfigurationSvc_CreateManualTLS_FullMethodName      = "/assets.ubika.io.v1beta.TLSConfigurationSvc/CreateManualTLS"
 	TLSConfigurationSvc_UpdateManualTLS_FullMethodName      = "/assets.ubika.io.v1beta.TLSConfigurationSvc/UpdateManualTLS"
 	TLSConfigurationSvc_DeleteTLSMaterial_FullMethodName    = "/assets.ubika.io.v1beta.TLSConfigurationSvc/DeleteTLSMaterial"
+	TLSConfigurationSvc_DeleteAllTLSMaterial_FullMethodName = "/assets.ubika.io.v1beta.TLSConfigurationSvc/DeleteAllTLSMaterial"
 	TLSConfigurationSvc_GetTLSMaterial_FullMethodName       = "/assets.ubika.io.v1beta.TLSConfigurationSvc/GetTLSMaterial"
 	TLSConfigurationSvc_ListTLSMaterial_FullMethodName      = "/assets.ubika.io.v1beta.TLSConfigurationSvc/ListTLSMaterial"
 	TLSConfigurationSvc_Default_FullMethodName              = "/assets.ubika.io.v1beta.TLSConfigurationSvc/Default"
@@ -1602,15 +1790,18 @@ type TLSConfigurationSvcClient interface {
 	Get(ctx context.Context, in *v1beta.GetOptions, opts ...grpc.CallOption) (*TLSConfiguration, error)
 	Update(ctx context.Context, in *TLSConfiguration, opts ...grpc.CallOption) (*TLSConfiguration, error)
 	Delete(ctx context.Context, in *v1beta.DeleteOptions, opts ...grpc.CallOption) (*TLSConfiguration, error)
+	DeleteAll(ctx context.Context, in *v1beta.ListOptions, opts ...grpc.CallOption) (*TLSConfigurationList, error)
 	Watch(ctx context.Context, in *v1beta.WatchOptions, opts ...grpc.CallOption) (TLSConfigurationSvc_WatchClient, error)
 	ListCSR(ctx context.Context, in *v1beta.ListOptions, opts ...grpc.CallOption) (*CSRList, error)
 	CreateCSR(ctx context.Context, in *CSRCreate, opts ...grpc.CallOption) (*CSR, error)
 	GetCSR(ctx context.Context, in *v1beta.GetOptions, opts ...grpc.CallOption) (*CSR, error)
 	DeleteCSR(ctx context.Context, in *v1beta.DeleteOptions, opts ...grpc.CallOption) (*CSR, error)
+	DeleteAllCSR(ctx context.Context, in *v1beta.ListOptions, opts ...grpc.CallOption) (*CSRList, error)
 	UpdateCSRCertificate(ctx context.Context, in *CSRCertificate, opts ...grpc.CallOption) (*TLSMaterial, error)
 	CreateManualTLS(ctx context.Context, in *TLSManualCreate, opts ...grpc.CallOption) (*TLSMaterial, error)
 	UpdateManualTLS(ctx context.Context, in *TLSManualCreate, opts ...grpc.CallOption) (*TLSMaterial, error)
 	DeleteTLSMaterial(ctx context.Context, in *v1beta.DeleteOptions, opts ...grpc.CallOption) (*TLSMaterial, error)
+	DeleteAllTLSMaterial(ctx context.Context, in *v1beta.ListOptions, opts ...grpc.CallOption) (*TLSMaterialList, error)
 	GetTLSMaterial(ctx context.Context, in *v1beta.GetOptions, opts ...grpc.CallOption) (*TLSMaterial, error)
 	ListTLSMaterial(ctx context.Context, in *v1beta.ListOptions, opts ...grpc.CallOption) (*TLSMaterialList, error)
 	// Defaults returns the list of available TLS configuration and defaults
@@ -1665,6 +1856,15 @@ func (c *tLSConfigurationSvcClient) Update(ctx context.Context, in *TLSConfigura
 func (c *tLSConfigurationSvcClient) Delete(ctx context.Context, in *v1beta.DeleteOptions, opts ...grpc.CallOption) (*TLSConfiguration, error) {
 	out := new(TLSConfiguration)
 	err := c.cc.Invoke(ctx, TLSConfigurationSvc_Delete_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *tLSConfigurationSvcClient) DeleteAll(ctx context.Context, in *v1beta.ListOptions, opts ...grpc.CallOption) (*TLSConfigurationList, error) {
+	out := new(TLSConfigurationList)
+	err := c.cc.Invoke(ctx, TLSConfigurationSvc_DeleteAll_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1739,6 +1939,15 @@ func (c *tLSConfigurationSvcClient) DeleteCSR(ctx context.Context, in *v1beta.De
 	return out, nil
 }
 
+func (c *tLSConfigurationSvcClient) DeleteAllCSR(ctx context.Context, in *v1beta.ListOptions, opts ...grpc.CallOption) (*CSRList, error) {
+	out := new(CSRList)
+	err := c.cc.Invoke(ctx, TLSConfigurationSvc_DeleteAllCSR_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *tLSConfigurationSvcClient) UpdateCSRCertificate(ctx context.Context, in *CSRCertificate, opts ...grpc.CallOption) (*TLSMaterial, error) {
 	out := new(TLSMaterial)
 	err := c.cc.Invoke(ctx, TLSConfigurationSvc_UpdateCSRCertificate_FullMethodName, in, out, opts...)
@@ -1769,6 +1978,15 @@ func (c *tLSConfigurationSvcClient) UpdateManualTLS(ctx context.Context, in *TLS
 func (c *tLSConfigurationSvcClient) DeleteTLSMaterial(ctx context.Context, in *v1beta.DeleteOptions, opts ...grpc.CallOption) (*TLSMaterial, error) {
 	out := new(TLSMaterial)
 	err := c.cc.Invoke(ctx, TLSConfigurationSvc_DeleteTLSMaterial_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *tLSConfigurationSvcClient) DeleteAllTLSMaterial(ctx context.Context, in *v1beta.ListOptions, opts ...grpc.CallOption) (*TLSMaterialList, error) {
+	out := new(TLSMaterialList)
+	err := c.cc.Invoke(ctx, TLSConfigurationSvc_DeleteAllTLSMaterial_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1820,15 +2038,18 @@ type TLSConfigurationSvcServer interface {
 	Get(context.Context, *v1beta.GetOptions) (*TLSConfiguration, error)
 	Update(context.Context, *TLSConfiguration) (*TLSConfiguration, error)
 	Delete(context.Context, *v1beta.DeleteOptions) (*TLSConfiguration, error)
+	DeleteAll(context.Context, *v1beta.ListOptions) (*TLSConfigurationList, error)
 	Watch(*v1beta.WatchOptions, TLSConfigurationSvc_WatchServer) error
 	ListCSR(context.Context, *v1beta.ListOptions) (*CSRList, error)
 	CreateCSR(context.Context, *CSRCreate) (*CSR, error)
 	GetCSR(context.Context, *v1beta.GetOptions) (*CSR, error)
 	DeleteCSR(context.Context, *v1beta.DeleteOptions) (*CSR, error)
+	DeleteAllCSR(context.Context, *v1beta.ListOptions) (*CSRList, error)
 	UpdateCSRCertificate(context.Context, *CSRCertificate) (*TLSMaterial, error)
 	CreateManualTLS(context.Context, *TLSManualCreate) (*TLSMaterial, error)
 	UpdateManualTLS(context.Context, *TLSManualCreate) (*TLSMaterial, error)
 	DeleteTLSMaterial(context.Context, *v1beta.DeleteOptions) (*TLSMaterial, error)
+	DeleteAllTLSMaterial(context.Context, *v1beta.ListOptions) (*TLSMaterialList, error)
 	GetTLSMaterial(context.Context, *v1beta.GetOptions) (*TLSMaterial, error)
 	ListTLSMaterial(context.Context, *v1beta.ListOptions) (*TLSMaterialList, error)
 	// Defaults returns the list of available TLS configuration and defaults
@@ -1856,6 +2077,9 @@ func (UnimplementedTLSConfigurationSvcServer) Update(context.Context, *TLSConfig
 func (UnimplementedTLSConfigurationSvcServer) Delete(context.Context, *v1beta.DeleteOptions) (*TLSConfiguration, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
 }
+func (UnimplementedTLSConfigurationSvcServer) DeleteAll(context.Context, *v1beta.ListOptions) (*TLSConfigurationList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteAll not implemented")
+}
 func (UnimplementedTLSConfigurationSvcServer) Watch(*v1beta.WatchOptions, TLSConfigurationSvc_WatchServer) error {
 	return status.Errorf(codes.Unimplemented, "method Watch not implemented")
 }
@@ -1871,6 +2095,9 @@ func (UnimplementedTLSConfigurationSvcServer) GetCSR(context.Context, *v1beta.Ge
 func (UnimplementedTLSConfigurationSvcServer) DeleteCSR(context.Context, *v1beta.DeleteOptions) (*CSR, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteCSR not implemented")
 }
+func (UnimplementedTLSConfigurationSvcServer) DeleteAllCSR(context.Context, *v1beta.ListOptions) (*CSRList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteAllCSR not implemented")
+}
 func (UnimplementedTLSConfigurationSvcServer) UpdateCSRCertificate(context.Context, *CSRCertificate) (*TLSMaterial, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateCSRCertificate not implemented")
 }
@@ -1882,6 +2109,9 @@ func (UnimplementedTLSConfigurationSvcServer) UpdateManualTLS(context.Context, *
 }
 func (UnimplementedTLSConfigurationSvcServer) DeleteTLSMaterial(context.Context, *v1beta.DeleteOptions) (*TLSMaterial, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteTLSMaterial not implemented")
+}
+func (UnimplementedTLSConfigurationSvcServer) DeleteAllTLSMaterial(context.Context, *v1beta.ListOptions) (*TLSMaterialList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteAllTLSMaterial not implemented")
 }
 func (UnimplementedTLSConfigurationSvcServer) GetTLSMaterial(context.Context, *v1beta.GetOptions) (*TLSMaterial, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTLSMaterial not implemented")
@@ -1998,6 +2228,24 @@ func _TLSConfigurationSvc_Delete_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TLSConfigurationSvc_DeleteAll_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1beta.ListOptions)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TLSConfigurationSvcServer).DeleteAll(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TLSConfigurationSvc_DeleteAll_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TLSConfigurationSvcServer).DeleteAll(ctx, req.(*v1beta.ListOptions))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _TLSConfigurationSvc_Watch_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(v1beta.WatchOptions)
 	if err := stream.RecvMsg(m); err != nil {
@@ -2091,6 +2339,24 @@ func _TLSConfigurationSvc_DeleteCSR_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TLSConfigurationSvc_DeleteAllCSR_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1beta.ListOptions)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TLSConfigurationSvcServer).DeleteAllCSR(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TLSConfigurationSvc_DeleteAllCSR_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TLSConfigurationSvcServer).DeleteAllCSR(ctx, req.(*v1beta.ListOptions))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _TLSConfigurationSvc_UpdateCSRCertificate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CSRCertificate)
 	if err := dec(in); err != nil {
@@ -2159,6 +2425,24 @@ func _TLSConfigurationSvc_DeleteTLSMaterial_Handler(srv interface{}, ctx context
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TLSConfigurationSvcServer).DeleteTLSMaterial(ctx, req.(*v1beta.DeleteOptions))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TLSConfigurationSvc_DeleteAllTLSMaterial_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1beta.ListOptions)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TLSConfigurationSvcServer).DeleteAllTLSMaterial(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TLSConfigurationSvc_DeleteAllTLSMaterial_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TLSConfigurationSvcServer).DeleteAllTLSMaterial(ctx, req.(*v1beta.ListOptions))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -2263,6 +2547,10 @@ var TLSConfigurationSvc_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _TLSConfigurationSvc_Delete_Handler,
 		},
 		{
+			MethodName: "DeleteAll",
+			Handler:    _TLSConfigurationSvc_DeleteAll_Handler,
+		},
+		{
 			MethodName: "ListCSR",
 			Handler:    _TLSConfigurationSvc_ListCSR_Handler,
 		},
@@ -2279,6 +2567,10 @@ var TLSConfigurationSvc_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _TLSConfigurationSvc_DeleteCSR_Handler,
 		},
 		{
+			MethodName: "DeleteAllCSR",
+			Handler:    _TLSConfigurationSvc_DeleteAllCSR_Handler,
+		},
+		{
 			MethodName: "UpdateCSRCertificate",
 			Handler:    _TLSConfigurationSvc_UpdateCSRCertificate_Handler,
 		},
@@ -2293,6 +2585,10 @@ var TLSConfigurationSvc_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteTLSMaterial",
 			Handler:    _TLSConfigurationSvc_DeleteTLSMaterial_Handler,
+		},
+		{
+			MethodName: "DeleteAllTLSMaterial",
+			Handler:    _TLSConfigurationSvc_DeleteAllTLSMaterial_Handler,
 		},
 		{
 			MethodName: "GetTLSMaterial",
@@ -2322,9 +2618,10 @@ var TLSConfigurationSvc_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
-	TLSMaterialInternalSvc_Get_FullMethodName   = "/assets.ubika.io.v1beta.TLSMaterialInternalSvc/Get"
-	TLSMaterialInternalSvc_List_FullMethodName  = "/assets.ubika.io.v1beta.TLSMaterialInternalSvc/List"
-	TLSMaterialInternalSvc_Watch_FullMethodName = "/assets.ubika.io.v1beta.TLSMaterialInternalSvc/Watch"
+	TLSMaterialInternalSvc_Get_FullMethodName          = "/assets.ubika.io.v1beta.TLSMaterialInternalSvc/Get"
+	TLSMaterialInternalSvc_List_FullMethodName         = "/assets.ubika.io.v1beta.TLSMaterialInternalSvc/List"
+	TLSMaterialInternalSvc_Watch_FullMethodName        = "/assets.ubika.io.v1beta.TLSMaterialInternalSvc/Watch"
+	TLSMaterialInternalSvc_CleanupOldLe_FullMethodName = "/assets.ubika.io.v1beta.TLSMaterialInternalSvc/CleanupOldLe"
 )
 
 // TLSMaterialInternalSvcClient is the client API for TLSMaterialInternalSvc service.
@@ -2334,6 +2631,7 @@ type TLSMaterialInternalSvcClient interface {
 	Get(ctx context.Context, in *v1beta.GetOptions, opts ...grpc.CallOption) (*TLSMaterialFull, error)
 	List(ctx context.Context, in *v1beta.ListOptions, opts ...grpc.CallOption) (*TLSMaterialFullList, error)
 	Watch(ctx context.Context, in *v1beta.WatchOptions, opts ...grpc.CallOption) (TLSMaterialInternalSvc_WatchClient, error)
+	CleanupOldLe(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*CleanupOldLEResponse, error)
 }
 
 type tLSMaterialInternalSvcClient struct {
@@ -2394,6 +2692,15 @@ func (x *tLSMaterialInternalSvcWatchClient) Recv() (*v1beta.WatchEvent, error) {
 	return m, nil
 }
 
+func (c *tLSMaterialInternalSvcClient) CleanupOldLe(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*CleanupOldLEResponse, error) {
+	out := new(CleanupOldLEResponse)
+	err := c.cc.Invoke(ctx, TLSMaterialInternalSvc_CleanupOldLe_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TLSMaterialInternalSvcServer is the server API for TLSMaterialInternalSvc service.
 // All implementations must embed UnimplementedTLSMaterialInternalSvcServer
 // for forward compatibility
@@ -2401,6 +2708,7 @@ type TLSMaterialInternalSvcServer interface {
 	Get(context.Context, *v1beta.GetOptions) (*TLSMaterialFull, error)
 	List(context.Context, *v1beta.ListOptions) (*TLSMaterialFullList, error)
 	Watch(*v1beta.WatchOptions, TLSMaterialInternalSvc_WatchServer) error
+	CleanupOldLe(context.Context, *emptypb.Empty) (*CleanupOldLEResponse, error)
 	mustEmbedUnimplementedTLSMaterialInternalSvcServer()
 }
 
@@ -2416,6 +2724,9 @@ func (UnimplementedTLSMaterialInternalSvcServer) List(context.Context, *v1beta.L
 }
 func (UnimplementedTLSMaterialInternalSvcServer) Watch(*v1beta.WatchOptions, TLSMaterialInternalSvc_WatchServer) error {
 	return status.Errorf(codes.Unimplemented, "method Watch not implemented")
+}
+func (UnimplementedTLSMaterialInternalSvcServer) CleanupOldLe(context.Context, *emptypb.Empty) (*CleanupOldLEResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CleanupOldLe not implemented")
 }
 func (UnimplementedTLSMaterialInternalSvcServer) mustEmbedUnimplementedTLSMaterialInternalSvcServer() {
 }
@@ -2488,6 +2799,24 @@ func (x *tLSMaterialInternalSvcWatchServer) Send(m *v1beta.WatchEvent) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _TLSMaterialInternalSvc_CleanupOldLe_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TLSMaterialInternalSvcServer).CleanupOldLe(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TLSMaterialInternalSvc_CleanupOldLe_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TLSMaterialInternalSvcServer).CleanupOldLe(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TLSMaterialInternalSvc_ServiceDesc is the grpc.ServiceDesc for TLSMaterialInternalSvc service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -2503,6 +2832,10 @@ var TLSMaterialInternalSvc_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "List",
 			Handler:    _TLSMaterialInternalSvc_List_Handler,
 		},
+		{
+			MethodName: "CleanupOldLe",
+			Handler:    _TLSMaterialInternalSvc_CleanupOldLe_Handler,
+		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
@@ -2515,12 +2848,13 @@ var TLSMaterialInternalSvc_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
-	IPBlacklistSvc_List_FullMethodName   = "/assets.ubika.io.v1beta.IPBlacklistSvc/List"
-	IPBlacklistSvc_Create_FullMethodName = "/assets.ubika.io.v1beta.IPBlacklistSvc/Create"
-	IPBlacklistSvc_Get_FullMethodName    = "/assets.ubika.io.v1beta.IPBlacklistSvc/Get"
-	IPBlacklistSvc_Update_FullMethodName = "/assets.ubika.io.v1beta.IPBlacklistSvc/Update"
-	IPBlacklistSvc_Delete_FullMethodName = "/assets.ubika.io.v1beta.IPBlacklistSvc/Delete"
-	IPBlacklistSvc_Watch_FullMethodName  = "/assets.ubika.io.v1beta.IPBlacklistSvc/Watch"
+	IPBlacklistSvc_List_FullMethodName      = "/assets.ubika.io.v1beta.IPBlacklistSvc/List"
+	IPBlacklistSvc_Create_FullMethodName    = "/assets.ubika.io.v1beta.IPBlacklistSvc/Create"
+	IPBlacklistSvc_Get_FullMethodName       = "/assets.ubika.io.v1beta.IPBlacklistSvc/Get"
+	IPBlacklistSvc_Update_FullMethodName    = "/assets.ubika.io.v1beta.IPBlacklistSvc/Update"
+	IPBlacklistSvc_Delete_FullMethodName    = "/assets.ubika.io.v1beta.IPBlacklistSvc/Delete"
+	IPBlacklistSvc_DeleteAll_FullMethodName = "/assets.ubika.io.v1beta.IPBlacklistSvc/DeleteAll"
+	IPBlacklistSvc_Watch_FullMethodName     = "/assets.ubika.io.v1beta.IPBlacklistSvc/Watch"
 )
 
 // IPBlacklistSvcClient is the client API for IPBlacklistSvc service.
@@ -2532,6 +2866,7 @@ type IPBlacklistSvcClient interface {
 	Get(ctx context.Context, in *v1beta.GetOptions, opts ...grpc.CallOption) (*IPBlacklist, error)
 	Update(ctx context.Context, in *IPBlacklist, opts ...grpc.CallOption) (*IPBlacklist, error)
 	Delete(ctx context.Context, in *v1beta.DeleteOptions, opts ...grpc.CallOption) (*IPBlacklist, error)
+	DeleteAll(ctx context.Context, in *v1beta.ListOptions, opts ...grpc.CallOption) (*IPBlacklistList, error)
 	Watch(ctx context.Context, in *v1beta.WatchOptions, opts ...grpc.CallOption) (IPBlacklistSvc_WatchClient, error)
 }
 
@@ -2588,6 +2923,15 @@ func (c *iPBlacklistSvcClient) Delete(ctx context.Context, in *v1beta.DeleteOpti
 	return out, nil
 }
 
+func (c *iPBlacklistSvcClient) DeleteAll(ctx context.Context, in *v1beta.ListOptions, opts ...grpc.CallOption) (*IPBlacklistList, error) {
+	out := new(IPBlacklistList)
+	err := c.cc.Invoke(ctx, IPBlacklistSvc_DeleteAll_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *iPBlacklistSvcClient) Watch(ctx context.Context, in *v1beta.WatchOptions, opts ...grpc.CallOption) (IPBlacklistSvc_WatchClient, error) {
 	stream, err := c.cc.NewStream(ctx, &IPBlacklistSvc_ServiceDesc.Streams[0], IPBlacklistSvc_Watch_FullMethodName, opts...)
 	if err != nil {
@@ -2629,6 +2973,7 @@ type IPBlacklistSvcServer interface {
 	Get(context.Context, *v1beta.GetOptions) (*IPBlacklist, error)
 	Update(context.Context, *IPBlacklist) (*IPBlacklist, error)
 	Delete(context.Context, *v1beta.DeleteOptions) (*IPBlacklist, error)
+	DeleteAll(context.Context, *v1beta.ListOptions) (*IPBlacklistList, error)
 	Watch(*v1beta.WatchOptions, IPBlacklistSvc_WatchServer) error
 	mustEmbedUnimplementedIPBlacklistSvcServer()
 }
@@ -2651,6 +2996,9 @@ func (UnimplementedIPBlacklistSvcServer) Update(context.Context, *IPBlacklist) (
 }
 func (UnimplementedIPBlacklistSvcServer) Delete(context.Context, *v1beta.DeleteOptions) (*IPBlacklist, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
+}
+func (UnimplementedIPBlacklistSvcServer) DeleteAll(context.Context, *v1beta.ListOptions) (*IPBlacklistList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteAll not implemented")
 }
 func (UnimplementedIPBlacklistSvcServer) Watch(*v1beta.WatchOptions, IPBlacklistSvc_WatchServer) error {
 	return status.Errorf(codes.Unimplemented, "method Watch not implemented")
@@ -2758,6 +3106,24 @@ func _IPBlacklistSvc_Delete_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _IPBlacklistSvc_DeleteAll_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1beta.ListOptions)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IPBlacklistSvcServer).DeleteAll(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: IPBlacklistSvc_DeleteAll_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IPBlacklistSvcServer).DeleteAll(ctx, req.(*v1beta.ListOptions))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _IPBlacklistSvc_Watch_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(v1beta.WatchOptions)
 	if err := stream.RecvMsg(m); err != nil {
@@ -2805,6 +3171,10 @@ var IPBlacklistSvc_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Delete",
 			Handler:    _IPBlacklistSvc_Delete_Handler,
+		},
+		{
+			MethodName: "DeleteAll",
+			Handler:    _IPBlacklistSvc_DeleteAll_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

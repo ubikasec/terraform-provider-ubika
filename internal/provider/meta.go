@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	metav1 "github.com/ubikasec/terraform-provider-ubika/internal/apis/meta/v1beta"
+	metav1 "github.com/ubikasec/terraform-provider-ubika/internal/client/meta/v1beta"
 )
 
 func GetObjectMetaResource() schema.Attribute {

@@ -9,8 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	assetsv1 "github.com/ubikasec/terraform-provider-ubika/internal/apis/assets.ubika.io/v1beta"
-	metav1 "github.com/ubikasec/terraform-provider-ubika/internal/apis/meta/v1beta"
+	assetsv1 "github.com/ubikasec/terraform-provider-ubika/internal/client/assets.ubika.io/v1beta"
+	metav1 "github.com/ubikasec/terraform-provider-ubika/internal/client/meta/v1beta"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -87,8 +87,7 @@ func (r *ErrorDocumentResource) Create(ctx context.Context, req resource.CreateR
 
 	// generate state from protobuf resource
 	var state assetsv1.ErrorDocumentResourceModel
-	_, err = state.FromProto(errorDocument)
-	if err != nil {
+	if err := state.FromProto(errorDocument); err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to get state from error document, got error: %s", err))
 		return
 	}
@@ -139,8 +138,7 @@ func (r *ErrorDocumentResource) read(ctx context.Context, metaObjValue basetypes
 
 	// update state from protobuf resource
 	var state assetsv1.ErrorDocumentResourceModel
-	_, err = state.FromProto(errorDocument)
-	if err != nil {
+	if err := state.FromProto(errorDocument); err != nil {
 		return assetsv1.ErrorDocumentResourceModel{}, []diag.Diagnostic{diag.NewErrorDiagnostic("Client Error", fmt.Sprintf("Unable to get state from error document %s/%s, got error: %s", meta.Name.ValueString(), meta.Namespace.ValueString(), err))}
 	}
 	return state, nil
@@ -169,8 +167,7 @@ func (r *ErrorDocumentResource) Update(ctx context.Context, req resource.UpdateR
 
 	// generate state from protobuf resource
 	var state assetsv1.ErrorDocumentResourceModel
-	_, err = state.FromProto(errorDocument)
-	if err != nil {
+	if err := state.FromProto(errorDocument); err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to get state from error document, got error: %s", err))
 		return
 	}

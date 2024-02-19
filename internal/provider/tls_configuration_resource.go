@@ -10,8 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	assetsv1 "github.com/ubikasec/terraform-provider-ubika/internal/apis/assets.ubika.io/v1beta"
-	metav1 "github.com/ubikasec/terraform-provider-ubika/internal/apis/meta/v1beta"
+	assetsv1 "github.com/ubikasec/terraform-provider-ubika/internal/client/assets.ubika.io/v1beta"
+	metav1 "github.com/ubikasec/terraform-provider-ubika/internal/client/meta/v1beta"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -93,8 +93,7 @@ func (r *TLSConfigurationResource) Create(ctx context.Context, req resource.Crea
 
 	// generate state from protobuf resource
 	var state assetsv1.TLSConfigurationResourceModel
-	_, err = state.FromProto(tlsConfiguration)
-	if err != nil {
+	if err := state.FromProto(tlsConfiguration); err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to get state from tls configuration, got error: %s", err))
 		return
 	}
@@ -145,8 +144,7 @@ func (r *TLSConfigurationResource) read(ctx context.Context, metaObjValue basety
 
 	// update state from protobuf resource
 	var state assetsv1.TLSConfigurationResourceModel
-	_, err = state.FromProto(tlsConfiguration)
-	if err != nil {
+	if err := state.FromProto(tlsConfiguration); err != nil {
 		return assetsv1.TLSConfigurationResourceModel{}, []diag.Diagnostic{diag.NewErrorDiagnostic("Client Error", fmt.Sprintf("Unable to get state from tls configuration %s/%s, got error: %s", meta.Name.ValueString(), meta.Namespace.ValueString(), err))}
 	}
 	return state, nil
@@ -175,8 +173,7 @@ func (r *TLSConfigurationResource) Update(ctx context.Context, req resource.Upda
 
 	// generate state from protobuf resource
 	var state assetsv1.TLSConfigurationResourceModel
-	_, err = state.FromProto(tlsConfiguration)
-	if err != nil {
+	if err := state.FromProto(tlsConfiguration); err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to get state from tls configuration, got error: %s", err))
 		return
 	}

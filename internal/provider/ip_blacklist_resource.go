@@ -10,8 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	assetsv1 "github.com/ubikasec/terraform-provider-ubika/internal/apis/assets.ubika.io/v1beta"
-	metav1 "github.com/ubikasec/terraform-provider-ubika/internal/apis/meta/v1beta"
+	assetsv1 "github.com/ubikasec/terraform-provider-ubika/internal/client/assets.ubika.io/v1beta"
+	metav1 "github.com/ubikasec/terraform-provider-ubika/internal/client/meta/v1beta"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -84,8 +84,7 @@ func (r *ipBlacklistResource) Create(ctx context.Context, req resource.CreateReq
 
 	// generate state from protobuf resource
 	var state assetsv1.IPBlacklistResourceModel
-	_, err = state.FromProto(ipBlacklist)
-	if err != nil {
+	if err := state.FromProto(ipBlacklist); err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to get state from IP blacklist, got error: %s", err))
 		return
 	}
@@ -136,8 +135,7 @@ func (r *ipBlacklistResource) read(ctx context.Context, metaObjValue basetypes.O
 
 	// update state from protobuf resource
 	var state assetsv1.IPBlacklistResourceModel
-	_, err = state.FromProto(ipBlacklist)
-	if err != nil {
+	if err := state.FromProto(ipBlacklist); err != nil {
 		return assetsv1.IPBlacklistResourceModel{}, []diag.Diagnostic{diag.NewErrorDiagnostic("Client Error", fmt.Sprintf("Unable to get state from IP blacklist %s/%s, got error: %s", meta.Name.ValueString(), meta.Namespace.ValueString(), err))}
 	}
 	return state, nil
@@ -166,8 +164,7 @@ func (r *ipBlacklistResource) Update(ctx context.Context, req resource.UpdateReq
 
 	// generate state from protobuf resource
 	var state assetsv1.IPBlacklistResourceModel
-	_, err = state.FromProto(ipBlacklist)
-	if err != nil {
+	if err := state.FromProto(ipBlacklist); err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to get state from IP blacklist, got error: %s", err))
 		return
 	}

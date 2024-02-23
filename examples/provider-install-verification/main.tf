@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     ubika = {
-      source = "registry.terraform.io/ubika/ubika"
+      source = "registry.terraform.io/ubikasec/ubika"
     }
   }
 }

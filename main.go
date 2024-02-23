@@ -35,7 +35,7 @@ func main() {
 	flag.Parse()
 
 	opts := providerserver.ServeOpts{
-		Address: "registry.terraform.io/ubika/ubika",
+		Address: "registry.terraform.io/ubikasec/ubika",
 		Debug:   debug,
 	}
 

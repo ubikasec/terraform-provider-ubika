@@ -62,6 +62,11 @@ func (r *AssetResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 							"exception_profile": schema.StringAttribute{
 								MarkdownDescription: "Exception profile (deprecated)",
 								Optional:            true,
+								Computed:            true,
+							},
+							"custom_icx_configuration": schema.StringAttribute{
+								Optional: true,
+								Computed: true,
 							},
 						},
 					},

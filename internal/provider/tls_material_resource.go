@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	assetsv1 "github.com/ubikasec/terraform-provider-ubika/internal/client/assets.ubika.io/v1beta"
@@ -52,7 +51,6 @@ func (r *TLSManualCreateResource) Schema(ctx context.Context, req resource.Schem
 						MarkdownDescription: "Chain",
 						Optional:            true,
 						Computed:            true,
-						Default:             stringdefault.StaticString(""),
 					},
 					"key": schema.StringAttribute{
 						MarkdownDescription: "Key",
